@@ -23,6 +23,7 @@ public class MainActivity extends Activity {
 		// This creates the database and allows you to read it.
 		databaseCreation();
 		
+		// This is how you get the list of the locations
 		List<Location> listOfAllLocations = locationsDataSource.getAllLocations();
 	}
 
