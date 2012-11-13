@@ -4,23 +4,21 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
 import android.content.Context;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 	
 	private static String DB_PATH = "/data/data/com.android.fastfacts/databases/";
-	static final String DB_NAME = "FastFactsDB";
+	static final String DB_NAME = "fastFactsDB";
 	private static final int DATABASE_VERSION = 1;
 	
 	static final String locationTable = "Location";	
-	static final String colID = "id";
-	static final String colAdress = "adress";
+	static final String colID = "_id";
+	static final String colAdress = "address";
 	static final String colName = "name";
 	static final String colLatitude = "latitude";
 	static final String colLongitude= "longitude";
@@ -39,14 +37,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
      * @param context
      */
     public DatabaseHelper(Context context) {
- 
     	super(context, DB_NAME, null, 1);
         this.myContext = context;
     }
     
     /**
      * Creates a empty database on the system and rewrites it with our own database.
-     * */
+     */
     public void createDataBase() throws IOException{
  
     	boolean dbExist = checkDataBase();
@@ -130,21 +127,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
  
     public void openDataBase() throws SQLException{
- 
     	//Open the database
         String myPath = DB_PATH + DB_NAME;
     	myDatabase = SQLiteDatabase.openDatabase(myPath, null, SQLiteDatabase.OPEN_READONLY);
- 
     }
  
     @Override
 	public synchronized void close() {
- 
     	    if(myDatabase != null)
     		    myDatabase.close();
  
     	    super.close();
- 
 	}
  
 	@Override
