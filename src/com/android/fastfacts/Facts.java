@@ -2,7 +2,7 @@ package com.android.fastfacts;
 
 import android.content.Context;
 
-public class Fact {
+public class Facts {
 	private int id, locId;
 	private String fact;
 	private Context ctx;

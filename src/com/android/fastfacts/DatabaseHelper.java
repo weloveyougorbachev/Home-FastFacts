@@ -18,7 +18,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 	
 	static final String locationTable = "Location";	
 	static final String colID = "_id";
-	static final String colAdress = "address";
+	static final String colAddress = "address";
 	static final String colName = "name";
 	static final String colLatitude = "latitude";
 	static final String colLongitude= "longitude";
@@ -42,7 +42,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
     
     /**
-     * Creates a empty database on the system and rewrites it with our own database.
+     * Creates an empty database on the system and rewrites it with our own database.
      */
     public void createDataBase() throws IOException{
  

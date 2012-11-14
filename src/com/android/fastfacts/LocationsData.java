@@ -12,7 +12,7 @@ public class LocationsData {
 	private SQLiteDatabase database;
 	private DatabaseHelper dbHelper;
 
-	private String[] allColumns = {DatabaseHelper.colID, DatabaseHelper.colAdress, DatabaseHelper.colName, DatabaseHelper.colLatitude, DatabaseHelper.colLongitude};
+	private String[] allColumns = {DatabaseHelper.colID, DatabaseHelper.colAddress, DatabaseHelper.colName, DatabaseHelper.colLatitude, DatabaseHelper.colLongitude};
 
 	public LocationsData(Context context) {
 		dbHelper = new DatabaseHelper(context);
@@ -29,10 +29,10 @@ public class LocationsData {
 	/**
 	 * This method gets all of the locations that are in the database.
 	 *
-	 * @return List<Location>
+	 * @return List<Locations>
 	 */
-	public List<Location> getAllLocations() {
-		List<Location> listOfLocations = new ArrayList<Location>();
+	public List<Locations> getAllLocations() {
+		List<Locations> listOfLocations = new ArrayList<Locations>();
 		Cursor cursor = database.query(DatabaseHelper.locationTable, allColumns, null, null, null, null, null);
 		cursor.moveToFirst();
 		while (!cursor.isAfterLast()) {
@@ -50,8 +50,8 @@ public class LocationsData {
 	 * @param lat
 	 * @return List<Location>
 	 */
-	public List<Location> getFiveClosestLocations(float lon, float lat) {
-		List<Location> listOfLocations = new ArrayList<Location>();
+	public List<Locations> getFiveClosestLocations(float lon, float lat) {
+		List<Locations> listOfLocations = new ArrayList<Locations>();
 		Cursor cursor = database.query(DatabaseHelper.locationTable, allColumns, null, null, null, null, null);
 		cursor.moveToFirst();
 		while (!cursor.isAfterLast()) {
@@ -65,12 +65,11 @@ public class LocationsData {
 	/**
 	 * This method returns the Location object that a passed cursor object points to.
 	 * 
-	 * @author Vitaliy Zheltov
 	 * @param cursor
 	 * @return The Location object that the cursor points to.
 	 */
-	private Location cursorToLocation(Cursor cursor) {
-		Location location = new Location();
+	private Locations cursorToLocation(Cursor cursor) {
+		Locations location = new Locations();
 		
 		location.setId(cursor.getInt(0));
 		location.setAdress(cursor.getString(1));

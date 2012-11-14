@@ -2,7 +2,7 @@ package com.android.fastfacts;
 
 import android.content.Context;
 
-public class Location {
+public class Locations {
 
 	private int id;
 	private String address, name;

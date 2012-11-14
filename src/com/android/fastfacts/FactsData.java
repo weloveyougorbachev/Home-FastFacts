@@ -34,8 +34,8 @@ public class FactsData {
 	 * @param cursor
 	 * @return The Location object that the cursor points to.
 	 */
-	private Fact cursorToFact(Cursor cursor) {
-		Fact fact = new Fact();
+	private Facts cursorToFact(Cursor cursor) {
+		Facts fact = new Facts();
 		
 		fact.setId(cursor.getInt(0));
 		fact.setLocationId(cursor.getInt(1));
