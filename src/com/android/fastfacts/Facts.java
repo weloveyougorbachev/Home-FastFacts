@@ -3,8 +3,9 @@ package com.android.fastfacts;
 import android.content.Context;
 
 public class Facts {
-	private int id, locId;
-	private String fact;
+	private int id;
+	private String reference;
+	private String fact, name;
 	private Context ctx;
 	
 	public int getId() {
@@ -15,12 +16,20 @@ public class Facts {
 		this.id = id;
 	}
 
-	public int getLocationId() {
-		return locId;
+	public String getReference() {
+		return reference;
 	}
 	
-	public void setLocationId(int id) {
-		this.locId = id;
+	public void setReference(String i) {
+		this.reference = i;
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	public void setName(String i) {
+		this.name = i;
 	}
 
 	public String getFact() {

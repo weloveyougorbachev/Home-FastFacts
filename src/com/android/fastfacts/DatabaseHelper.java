@@ -13,19 +13,15 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class DatabaseHelper extends SQLiteOpenHelper {
 	
 	private static String DB_PATH = "/data/data/com.android.fastfacts/databases/";
+
 	static final String DB_NAME = "fastFactsDB";
 	private static final int DATABASE_VERSION = 1;
-	
-	static final String locationTable = "Location";	
-	static final String colID = "_id";
-	static final String colAddress = "address";
-	static final String colName = "name";
-	static final String colLatitude = "latitude";
-	static final String colLongitude= "longitude";
 
 	static final String factsTable = "Facts";
-	static final String colLocationID = "id";
+	static final String colReference = "reference";
 	static final String colFact = "fact";
+	static final String colId = "_id";
+	static final String colName = "name";
 
     private SQLiteDatabase myDatabase; 
     
@@ -53,11 +49,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     	}else{
  
     		//By calling this method and empty database will be created into the default system path
-               //of your application so we are gonna be able to overwrite that database with our database.
-        	this.getReadableDatabase();
+            //of your application so we are gonna be able to overwrite that database with our database.
+    		this.close();
+    		this.getReadableDatabase();
  
         	try {
- 
+        		this.close();
     			copyDataBase();
  
     		} catch (IOException e) {

@@ -1,35 +1,74 @@
-//dfgfgfg
+/**
+ * This is our Main Activity that handles with getting the gps location of the phone and
+ * then creates our list view from the google places that we get.
+ * 
+ * @author Vitaliy Zheltov, Adam Formenti
+ */
 package com.android.fastfacts;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
+import android.text.Html;
 import android.view.Menu;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.ListAdapter;
+import android.widget.ListView;
+import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.AdapterView.OnItemClickListener;
 
 public class MainActivity extends FragmentActivity implements LocationListener {
+	
+	// Alert Dialog Manager
+	AlertDialogManager alert = new AlertDialogManager();
+
+	// Google Places
+	gPlaceAccess googlePlaces;
+
+	// Places List
+	PlacesList nearPlaces;
+
+	// Progress dialog
+	ProgressDialog pDialog;
+	
+	// Places Listview
+	ListView lv;
+	
+	// ListItems data
+	ArrayList<HashMap<String, String>> placesListItems = new ArrayList<HashMap<String,String>>();
+	
+	// KEY Strings
+	public static String KEY_REFERENCE = "reference"; // id of the place
+	public static String KEY_NAME = "name"; // name of the place
+	public static String KEY_VICINITY = "vicinity"; // Place area name
 	
     private LocationManager locationManager;
     private Location gpsLocation = null;
     private String provider;
     
-	LocationsData locationsDataSource = new LocationsData(this);
 	DatabaseHelper myDbHelper = new DatabaseHelper(this);
 
     TextView tv;
@@ -38,25 +77,38 @@ public class MainActivity extends FragmentActivity implements LocationListener {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		tv = (TextView)findViewById(R.id.textView1);
+		lv = (ListView) findViewById(R.id.listOfPlaces);
 		
 		// This creates the database and allows you to read it.
 		databaseCreation();
 
         // This gets the location and puts it in the variable 'gpsLocation'
         gettingLocation();
-        
-		// This is how you get the list of the locations (Don't forget to open the source and then close it)
-        locationsDataSource.open();
-		List<Locations> listOfAllLocations = locationsDataSource.getAllLocations();
-		locationsDataSource.close();
+    
+	
+		// This calls background Async task to load Google Places
+		// After getting places from Google all the data is shown in listview
+		new LoadPlaces().execute();
 		
-        // This is how you get the latitude and longitude, this is just for an example.
-        double one = gpsLocation.getLatitude();
-        double two = gpsLocation.getLongitude();
-        
-        tv.setText("" + one + ", " + two);
-		
+		// This is on item click listener which listens if an item on the list has been clicked.
+		lv.setOnItemClickListener(new OnItemClickListener() {
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            	// Getting our reference from the selected ListItem
+                String reference = ((TextView) view.findViewById(R.id.reference)).getText().toString();
+                String name = ((TextView) view.findViewById(R.id.name)).getText().toString();
+                
+                // Starting new intent
+                Intent singlePlaceActivity = new Intent(getApplicationContext(), SinglePlaceActivity.class);
+                
+                // Sending place name id to single place activity
+                singlePlaceActivity.putExtra("Name", name);           
+                
+                // Sending place reference id to single place activity
+                singlePlaceActivity.putExtra(KEY_REFERENCE, reference);
+                
+                startActivity(singlePlaceActivity);
+            }
+        });
 	}
 
 	// Method that gets the location
@@ -131,6 +183,7 @@ public class MainActivity extends FragmentActivity implements LocationListener {
     protected void onStop() {
         super.onStop();
         locationManager.removeUpdates(this);
+        pDialog.dismiss();
     }
 
     // Removes the locationlistener updates when Activity is paused.
@@ -138,6 +191,7 @@ public class MainActivity extends FragmentActivity implements LocationListener {
     protected void onPause() {
       super.onPause();
       locationManager.removeUpdates(this);
+      pDialog.dismiss();
     }
     
     // Requests updates at startup.
@@ -163,6 +217,143 @@ public class MainActivity extends FragmentActivity implements LocationListener {
 	public void onStatusChanged(String provider, int status, Bundle extras) {
 		// TODO Auto-generated method stub
 		
+	}
+	
+	/**
+	 * Background Async Task to Load Google places
+	 * */
+	class LoadPlaces extends AsyncTask<String, String, String> {
+
+		/**
+		 * Before starting background thread Show Progress Dialog
+		 * */
+		@Override
+		protected void onPreExecute() {
+			super.onPreExecute();
+			pDialog = new ProgressDialog(MainActivity.this);
+			pDialog.setMessage(Html.fromHtml("<b>Search</b><br/>Loading Places..."));
+			pDialog.setIndeterminate(false);
+			pDialog.setCancelable(false);
+			pDialog.show();
+		}
+
+		/**
+		 * getting Places JSON
+		 * */
+		protected String doInBackground(String... args) {
+			// Creating Places class object
+			googlePlaces = new gPlaceAccess();
+			
+			try {
+				// Separeate your place types by PIPE symbol "|"
+				// or null for everything
+				String types = "restaurant|gas_station|cafe";
+				
+				// Radius in meters
+				double radius = 1000;
+				
+				// Get nearest places
+				nearPlaces = googlePlaces.search(gpsLocation.getLatitude(), gpsLocation.getLongitude(), radius, types);
+				
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			return null;
+		}
+
+		/**
+		 * After completing background task Dismiss the progress dialog
+		 * and show the data in UI
+		 * Always use runOnUiThread(new Runnable()) to update UI from background
+		 * thread, otherwise you will get error
+		 * **/
+		protected void onPostExecute(String file_url) {
+			// Dismisses the dialog after getting all products
+			pDialog.dismiss();
+			// Updating UI from Background Thread
+			runOnUiThread(new Runnable() {
+				public void run() {
+					/**
+					 * Updating parsed Places into LISTVIEW
+					 * */
+					// Get json response status
+					String status = nearPlaces.status;
+					
+					// Check for all possible status
+					if(status.equals("OK")){
+						// Successfully got places details
+						if (nearPlaces.results != null) {
+							// loop through each place
+							for (Place p : nearPlaces.results) {
+								HashMap<String, String> map = new HashMap<String, String>();
+								
+								// Place reference won't display in listview - it will be hidden
+								// Place reference is used to get "place full details"
+								map.put(KEY_REFERENCE, p.reference);
+								
+								// Place name
+								map.put(KEY_NAME, p.name);
+								
+								// GOING TO PUT OTHER STUFF IN HERE
+								// Place vicinity
+								//map.put(KEY_VICINITY, p.vicinity);
+								
+								
+								// adding HashMap to ArrayList
+								placesListItems.add(map);
+							}
+							// list adapter
+							ListAdapter adapter = new SimpleAdapter(MainActivity.this, placesListItems,
+					                R.layout.list_item,
+					                new String[] { KEY_REFERENCE, KEY_NAME}, new int[] {
+					                        R.id.reference, R.id.name });
+							
+							// Adding data into listview
+							lv.setAdapter(adapter);
+						}
+					}
+					else if(status.equals("ZERO_RESULTS")){
+						// Zero results found
+						alert.showAlertDialog(MainActivity.this, "Near Places",
+								"Sorry no places found. Try to change the types of places",
+								false);
+					}
+					else if(status.equals("UNKNOWN_ERROR"))
+					{
+						alert.showAlertDialog(MainActivity.this, "Places Error",
+								"Sorry unknown error occured.",
+								false);
+					}
+					else if(status.equals("OVER_QUERY_LIMIT"))
+					{
+						alert.showAlertDialog(MainActivity.this, "Places Error",
+								"Sorry query limit to google places is reached",
+								false);
+					}
+					else if(status.equals("REQUEST_DENIED"))
+					{
+						alert.showAlertDialog(MainActivity.this, "Places Error",
+								"Sorry error occured. Request is denied",
+								false);
+					}
+					else if(status.equals("INVALID_REQUEST"))
+					{
+						alert.showAlertDialog(MainActivity.this, "Places Error",
+								"Sorry error occured. Invalid Request",
+								false);
+					}
+					else
+					{
+						alert.showAlertDialog(MainActivity.this, "Places Error",
+								"Sorry error occured.",
+								false);
+					}
+				}
+			});
+
+		}
+
 	}
 }
 

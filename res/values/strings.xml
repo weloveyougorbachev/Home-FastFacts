@@ -7,4 +7,9 @@
     <string name="enable_gps">Enable GPS</string>
     <string name="enable_gps_dialog">GPS provider not enabled. Would you like to enable it?</string>
         <string name="not_support_gps">GPS provider not supported</string>
+        <string name="title_picture">Title Picture</string>
+        <string name="address">Address:</string>
+        <string name="back_button">Back Button</string>
+        <string name="phone_number">Phone Number:</string>
+        <string name="location_lat_long">Location: (lat/long)</string>
 </resources>
